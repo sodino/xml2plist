@@ -6,6 +6,8 @@ import os
 dir_old = "/Users/sodino/NativeProjects/textconfiguration/old"
 ## 记录所有的Tag名称
 tags = {}
+## 记录所有的format格式
+formats = {}
 
 class TextXML:
     count = 0
@@ -23,6 +25,10 @@ class TextXML:
             if firstNode.nodeType == xml.dom.Node.TEXT_NODE:
                 continue
             tags[firstNode.nodeName] = ""
+            if firstNode.nodeName == "format":
+                if (firstNode.childNodes.length > 0) :
+                    format_value = firstNode.childNodes[0].data
+                    formats[format_value] = ""
 
 
 
@@ -47,3 +53,4 @@ if __name__ == '__main__':
         test_xml.read2parse_xml(i)
 
     print("xml all tagNames are : " + str(tags.keys()))
+    print("xml all formats are : " + str(formats.keys()))
