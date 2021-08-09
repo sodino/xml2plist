@@ -1,9 +1,16 @@
 from xml.dom.minidom import parse
 import xml.dom.minidom
 import os
+import shutil
 
 ## 寻找老素材的地址
-dir_old = "/Users/sodino/NativeProjects/textconfiguration/old"
+# dir_old = "/Users/sodino/NativeProjects/textconfiguration/old/"
+dir_old = "/Users/sodino/IdeaProjects/xml2plist/test/"
+## 转换为plist后的存储路径，要以 / 结尾
+dir_plist = "/Users/sodino/NativeProjects/textconfiguration/new_plist/"
+
+XML_NAME = "TextBubbleInfo.xml"
+
 ## 记录所有的Tag名称
 tags = {}
 ## 记录所有的format格式
@@ -84,10 +91,10 @@ class TextXML:
     textPieceArray          = []
 
     ## 当前xml的绝对路径
-    __xml_path              = ""
+    _xml_path               = ""
 
     def __init__(self, xml_path):
-        self.__xml_path = xml_path
+        self._xml_path = xml_path
 
     def __str__(self):
         return "resId(%s) [w, h]=[%s, %s] bg=%s" %(self.resId, self.width, self.height, self.backgroundImagePath)
@@ -188,8 +195,8 @@ class TextXML:
         self.read_textPieceArray(e_textPieceArray)
 
 
-    def parse_xml(self):
-        dom_tree = xml.dom.minidom.parse(self.__xml_path)
+    def read_xml(self):
+        dom_tree = xml.dom.minidom.parse(self._xml_path)
         root_element = dom_tree.documentElement
         self.collect_all_infos(root_element)
         self.read_tag_values(root_element)
@@ -197,26 +204,65 @@ class TextXML:
             print(text)
 
 
+# 一个文字素材包解压后的目录结构
+# AUGUST 
+#     |-- configuration.plist
+#     |-- ar
+#         |-- configuration.plist
+#         |-- res
+#             |-- bg.plist
+#             |-- bg.png                  ## 缩略图，对文字需求来说可以省略
+#             |-- arp
+#                 |-- bg.png
+
+class Converter:
+    
+    ## 清除存储目录
+    def clear_target_directory(self):
+        if os.path.exists(dir_plist):
+            shutil.rmtree(dir_plist)
+            os.makedirs(dir_plist)
+            print("clear and recreate target directory : %s" % dir_plist)
+        else:
+            os.makedirs(dir_plist)
+            print("create a new target directory : %s" % dir_plist)
+
+    
+    def create_target_directory(self, xml_path):
+        suffix = xml_path.replace(dir_old, "").replace(XML_NAME, "")
+        new_dir_path = dir_plist + suffix
+        # 创建新文件夹的目录 
+        os.makedirs(new_dir_path)
+        print("new_dir_path : " + new_dir_path)
+        return new_dir_path
+
+    def convert2plist(self, text_xml):
+        target_dir_path = self.create_target_directory(text_xml._xml_path)
+
+            
 
 
-
-
-def findAllFile(base):
-    for root, ds, fs in os.walk(base):
-        for f in fs:
-            if f.endswith("TextBubbleInfo.xml"):
-                fullname = os.path.join(root, f)
-                yield fullname
+    def findAllFile(self, base_path):
+        for root, ds, fs in os.walk(base_path):
+            for f in fs:
+                if f.endswith(XML_NAME):
+                    fullname = os.path.join(root, f)
+                    yield fullname
 
 
 if __name__ == '__main__':
+    converter = Converter()
+    ## 清空、重建一下存储目录
+    converter.clear_target_directory()
+
     ##  当前目录路径
     # current_path = os.getcwd()
     # test_xml = TextXML()
     # test_xml.read2parse_xml(current_path + "/TextBubbleInfo.xml")
-    for xml_path in findAllFile(dir_old) :
-        test_xml = TextXML(xml_path)
-        test_xml.parse_xml()
+    for xml_path in converter.findAllFile(dir_old) :
+        text_xml = TextXML(xml_path)
+        text_xml.read_xml()
+        converter.convert2plist(text_xml)
 
     print("xml all tagNames are : " + str(tags.keys()))
     print("xml all formats are : " + str(formats.keys()))
