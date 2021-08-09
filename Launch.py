@@ -12,18 +12,19 @@ class TextXML:
     def read2parse_xml(self, path):
         dom_tree = xml.dom.minidom.parse(path)
         root_element = dom_tree.documentElement
-        for child in root_element.childNodes:
-            if child.nodeType == xml.dom.Node.TEXT_NODE:
-                continue
+        listAllNodes = [root_element]
+        while len(listAllNodes) > 0:
+            firstNode = listAllNodes[0]
+            listAllNodes.remove(firstNode)
 
-            print("child.nodeName=" + child.nodeName  + " nodeType=" + str(child.nodeType) + " childNodes.length=" + str(child.childNodes.length))
-            ## 为了使用dict记录 nodeName，value无意义
-            tags[child.nodeName] = ""
-            if (child.childNodes.length > 0):
-                for c2 in child.childNodes:
-                    if (c2.nodeType == xml.dom.Node.TEXT_NODE) :
-                        continue
-                    tags[c2.nodeName] = ""
+            if firstNode.childNodes.length > 0 :
+                listAllNodes.extend(firstNode.childNodes)
+
+            if firstNode.nodeType == xml.dom.Node.TEXT_NODE:
+                continue
+            tags[firstNode.nodeName] = ""
+
+
 
 
 
