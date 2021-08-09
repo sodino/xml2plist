@@ -14,20 +14,21 @@ class TextXML:
     def read2parse_xml(self, path):
         dom_tree = xml.dom.minidom.parse(path)
         root_element = dom_tree.documentElement
-        listAllNodes = [root_element]
-        while len(listAllNodes) > 0:
-            firstNode = listAllNodes[0]
-            listAllNodes.remove(firstNode)
+        list_all_nodes = [root_element]
+        while len(list_all_nodes) > 0:
+            first_node = list_all_nodes[0]
+            list_all_nodes.remove(first_node)
 
-            if firstNode.childNodes.length > 0 :
-                listAllNodes.extend(firstNode.childNodes)
+            if first_node.childNodes.length > 0 :
+                list_all_nodes.extend(first_node.childNodes)
 
-            if firstNode.nodeType == xml.dom.Node.TEXT_NODE:
+            if first_node.nodeType == xml.dom.Node.TEXT_NODE:
                 continue
-            tags[firstNode.nodeName] = ""
-            if firstNode.nodeName == "format":
-                if (firstNode.childNodes.length > 0) :
-                    format_value = firstNode.childNodes[0].data
+            tags[first_node.nodeName] = ""
+            if first_node.nodeName == "format":
+                if first_node.childNodes.length > 0:
+                    ## 获取xml字段名对应的字段值
+                    format_value = first_node.childNodes[0].data
                     formats[format_value] = ""
 
 
