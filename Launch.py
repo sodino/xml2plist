@@ -2,7 +2,7 @@ from xml.dom.minidom import parse
 import xml.dom.minidom
 import os
 import shutil
-import XmlConst
+import PlistConst
 import PlistIO
 
 ## 寻找老素材的地址
@@ -242,17 +242,33 @@ class Converter:
 
     ## 创建素材包根目录下第一个 configuration.plist 
     def create_root_plist(self, dir, text_xml):
-        old_content = XmlConst.const_root_plist
-        new_content = old_content.format(width = text_xml.width, 
+        template = PlistConst.const_root_plist
+        new_content = template.format(width = text_xml.width, 
                                         height = text_xml.height,
                                         fonts = text_xml.fonts())
-        file_plist_path = os.path.join(dir, XmlConst.configuration_plist)
+        file_plist_path = os.path.join(dir, PlistConst.configuration_plist)
         PlistIO.write(file_plist_path, new_content)
         
+    def create_bg_plist(self, dir, text_xml):
+        template = PlistConst.const_bg_plist
+        new_content = template.format(bg_file_name = text_xml.backgroundImagePath)
+        file_plist_path = os.path.join(dir, PlistConst.bg_plist)
+        PlistIO.write(file_plist_path, new_content)
+
+    def copy_bg_file(self, dir, text_xml):
+        xml_dir = os.path.dirname(text_xml._xml_path)
+        file_bg_path = os.path.join(xml_dir, text_xml.backgroundImagePath)
+        if os.path.exists(file_bg_path) == False:
+            print("Error!! Can't find bg file. res<%s> bg=%s" %(text_xml.resId, text_xml.backgroundImagePath))
+        new_bg_path = os.path.join(dir, os.path.join(PlistConst.ar_res_arp, text_xml.backgroundImagePath))
+        print("test --> new_bg_path %s" %new_bg_path)
+        PlistIO.copy_file(file_bg_path, new_bg_path)
 
     def convert2plist(self, text_xml):
         target_dir_path = self.create_target_directory(text_xml._xml_path)
         self.create_root_plist(target_dir_path, text_xml)
+        self.create_bg_plist(target_dir_path, text_xml)
+        self.copy_bg_file(target_dir_path, text_xml)
 
             
 
