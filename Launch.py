@@ -2,6 +2,7 @@ from xml.dom.minidom import parse
 import xml.dom.minidom
 import os
 import shutil
+import XmlConst
 
 ## 寻找老素材的地址
 # dir_old = "/Users/sodino/NativeProjects/textconfiguration/old/"
@@ -28,15 +29,9 @@ def xml_elements_value(elements):
     return value
 
 class XmlFrameRect:
-    ## xml中 <frameRect>的值 : >{{305,25},{105,575}}
-    content         = ""
-
-    x               = ""
-    y               = ""
-    width           = ""
-    height          = ""
-
+    
     def __init__(self, content):
+        ## xml中 <frameRect>的值 : >{{305,25},{105,575}}
         self.content = content
         tmp = content.replace("{", "").replace("}", "")
         values = tmp.split(',')
@@ -49,28 +44,29 @@ class XmlFrameRect:
         return "[x,y=%s,%s, w,h=%s,%s]" %(self.x, self.y, self.width, self.height)
 
 class XmlTextPiece:
-    type            = ""
-    text            = ""
-    format          = ""
-    language        = ""
-    caseString      = ""
-    editable        = ""
-    color           = ""
+    def __init__(self):
+        self.type            = ""
+        self.text            = ""
+        self.format          = ""
+        self.language        = ""
+        self.caseString      = ""
+        self.editable        = ""
+        self.color           = ""
 
-    isBold          = ""
-    isItalic        = ""
-    autoLineBreak   = ""
+        self.isBold          = ""
+        self.isItalic        = ""
+        self.autoLineBreak   = ""
 
-    isVerticalText  = ""
-    align           = ""
-    verticalAlign   = ""
-    font            = ""
+        self.isVerticalText  = ""
+        self.align           = ""
+        self.verticalAlign   = ""
+        self.font            = ""
 
-    showShadow      = ""
-    shadowColor     = ""
-    ## <shadowOffset>{1.000000,1.000000}</shadowOffset>
-    shadowOffset    = ""
-    frameRect       = ""
+        self.showShadow      = ""
+        self.shadowColor     = ""
+        ## <shadowOffset>{1.000000,1.000000}</shadowOffset>
+        self.shadowOffset    = ""
+        self.frameRect       = ""
 
     def __str__(self):
         value = "type=%s text='%s' format='%s' color='%s' frameRect:%s"\
@@ -80,24 +76,35 @@ class XmlTextPiece:
 
 
 class TextXML:
-    resId                   = ""
-
-    width                   = ""
-    height                  = ""
-
-    backgroundImagePath     = ""
-
-    mirrorReverse           = ""
-    textPieceArray          = []
-
-    ## 当前xml的绝对路径
-    _xml_path               = ""
-
     def __init__(self, xml_path):
-        self._xml_path = xml_path
+        ## 当前xml的绝对路径
+        self._xml_path          = xml_path
+        self.textPieceArray     = []
+        self.resId              = ""
+
+        self.width              = ""
+        self.height             = ""
+
+        self.backgroundImagePath= ""
+        self.mirrorReverse      = ""
 
     def __str__(self):
         return "resId(%s) [w, h]=[%s, %s] bg=%s" %(self.resId, self.width, self.height, self.backgroundImagePath)
+
+    def fonts(self):
+        values = ""
+        dict = {}
+        for piece in self.textPieceArray:
+            font = piece.font
+            if font in dict:
+                continue
+            suffix = ""
+            if len(dict) > 0:
+                suffix = ","
+            values = values + suffix + font
+            dict[piece.font] = ""
+
+        return values
 
     ## 收集所有关注的xml字段名或字段值
     def collect_all_infos(self, root_element):
@@ -189,8 +196,6 @@ class TextXML:
         e_mirrorReverse = root_element.getElementsByTagName("mirrorReverse")
         self.mirrorReverse = xml_elements_value(e_mirrorReverse)
 
-        print(self)
-
         e_textPieceArray = root_element.getElementsByTagName("textPieceArray")
         self.read_textPieceArray(e_textPieceArray)
 
@@ -200,8 +205,6 @@ class TextXML:
         root_element = dom_tree.documentElement
         self.collect_all_infos(root_element)
         self.read_tag_values(root_element)
-        for text in self.textPieceArray:
-            print(text)
 
 
 # 一个文字素材包解压后的目录结构
@@ -236,8 +239,17 @@ class Converter:
         print("new_dir_path : " + new_dir_path)
         return new_dir_path
 
+    ## 创建素材包根目录下第一个 configuration.plist 
+    def create_root_plist(self, dir, text_xml):
+        old_content = XmlConst.const_root_plist
+        new_content = old_content.format(width = text_xml.width, 
+                                        height = text_xml.height,
+                                        fonts = text_xml.fonts())
+        print("new_content=%s" % new_content)
+
     def convert2plist(self, text_xml):
         target_dir_path = self.create_target_directory(text_xml._xml_path)
+        self.create_root_plist(target_dir_path, text_xml)
 
             
 
@@ -249,20 +261,24 @@ class Converter:
                     fullname = os.path.join(root, f)
                     yield fullname
 
+    def start(self):
+        ##  当前目录路径
+        # current_path = os.getcwd()
+        # test_xml = TextXML()
+        # test_xml.read2parse_xml(current_path + "/TextBubbleInfo.xml")
+        for xml_path in self.findAllFile(dir_old) :
+            text_xml = TextXML(xml_path)
+            text_xml.read_xml()
+            converter.convert2plist(text_xml)
+
 
 if __name__ == '__main__':
     converter = Converter()
     ## 清空、重建一下存储目录
     converter.clear_target_directory()
 
-    ##  当前目录路径
-    # current_path = os.getcwd()
-    # test_xml = TextXML()
-    # test_xml.read2parse_xml(current_path + "/TextBubbleInfo.xml")
-    for xml_path in converter.findAllFile(dir_old) :
-        text_xml = TextXML(xml_path)
-        text_xml.read_xml()
-        converter.convert2plist(text_xml)
+    converter.start()
+    
 
     print("xml all tagNames are : " + str(tags.keys()))
     print("xml all formats are : " + str(formats.keys()))
