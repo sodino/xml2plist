@@ -3,6 +3,7 @@ import xml.dom.minidom
 import os
 import shutil
 import XmlConst
+import PlistIO
 
 ## 寻找老素材的地址
 # dir_old = "/Users/sodino/NativeProjects/textconfiguration/old/"
@@ -245,7 +246,9 @@ class Converter:
         new_content = old_content.format(width = text_xml.width, 
                                         height = text_xml.height,
                                         fonts = text_xml.fonts())
-        print("new_content=%s" % new_content)
+        file_plist_path = os.path.join(dir, XmlConst.configuration_plist)
+        PlistIO.write(file_plist_path, new_content)
+        
 
     def convert2plist(self, text_xml):
         target_dir_path = self.create_target_directory(text_xml._xml_path)
