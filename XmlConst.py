@@ -14,3 +14,5 @@ const_root_plist = '''
 	</array>
 </plist>
 '''
+
+configuration_plist = "configuration.plist"
