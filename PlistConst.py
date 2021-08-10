@@ -51,3 +51,58 @@ const_bg_plist = '''
 	</dict>
 </plist>
 '''
+
+const_ar_common_text_v2='''
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string></string>
+			<key>FacePart</key>
+			<array>
+				<dict>
+					<key>Type</key>
+					<string>MVCommonTextV2</string>
+					<key>DrawLayerBorder</key>
+					<integer>0</integer>
+					<key>TextEnum</key>
+					<integer>0</integer>
+					<key>TextCommonStruct</key>
+					<dict>
+						<key>BGAnimation</key>
+						<string>bg.plist</string>
+						<key>BGThumbnailImage</key>
+						<string>{bg_file_name}</string>
+						<key>FGVAnimation</key>
+						<string></string>
+						<key>DefaultSize</key>
+						<string>{width}, {height}</string>
+                        {xml_text_piece_array_2_plist_lines}
+					</dict>
+				</dict>
+			</array>
+		</dict>
+	</array>
+</plist>
+'''
+
+
+const_key_string 	= '''<key>{key}</key><string>{string}</string>'''
+const_key_integer = '''<key>{key}</key><integer>{integer}</integer>'''
+
+const_key_array 	= '''<key>{key}</key><array>{array}</array>'''
+const_key_dict	= '''<key>{key}</key><dict>{dict}</dict>'''
+
+def key_string(key, string):
+	return const_key_string.format(key = key, string = string)
+
+def key_integer(key, integer):
+	return const_key_integer.format(key = key, integer = integer)
+
+def key_array(key, array):
+	return const_key_array.format(key = key, array = array)
+
+def key_dict(key, dict):
+	return const_key_dict.format(key = key, dict = dict)
