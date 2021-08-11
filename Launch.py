@@ -9,7 +9,7 @@ import PlistIO
 # dir_old = "/Users/sodino/NativeProjects/textconfiguration/old/"
 dir_old = "/Users/sodino/IdeaProjects/xml2plist/test/"
 ## 转换为plist后的存储路径，要以 / 结尾
-dir_plist = "/Users/sodino/NativeProjects/textconfiguration/new_plist/"
+dir_plist = "/Users/sodino/IdeaProjects/xml2plist/new_plist/"
 
 XML_NAME = "TextBubbleInfo.xml"
 
@@ -105,6 +105,11 @@ class XmlTextPiece:
         ## print("test --> %s to %s" %(self.color, value))
         return value
 
+    def text_input_flag(self):
+        if len(self.format) == 0:
+            return ""
+        return ""
+
     def text_horizontal_and_justify(self):
         XML_LEFT = '0'
         XML_CENTER = '1'
@@ -173,6 +178,11 @@ class XmlTextPiece:
             wrap = 0
         line += PlistConst.key_integer("Wrap", wrap)
 
+        editable = 1 ## 默认可编辑
+        input_flag = PlistConst.plist_input_flag(self.format, self.caseString, self.language)
+        if len(input_flag) > 0:
+            line += PlistConst.key_string("InputFlag", input_flag)
+            editable = 0 ## 有format就不可编辑
 
         ## 下划线：默认值，原xml中无此定义
         line += PlistConst.key_integer("Underline", 0)
@@ -187,10 +197,12 @@ class XmlTextPiece:
         ## 是否自动缩放：默认值，原xml中无此定义
         line += PlistConst.key_integer("Shrink", 1)
 
+        line += PlistConst.const_plist_LayerStyleConfigs.format(editable = editable)
 
-        print("test --> line : %s" %line)
+        result = PlistConst.key_dict(dict = line)
+        print("test --> line : %s" %result)
 
-        return ""
+        return result
 
 
 class TextXML:
@@ -332,11 +344,12 @@ class TextPlist:
         self.xml = xml
 
     def generate_plist_lines(self):
+        lines = ""
         xml_text_piece_array = self.xml.textPieceArray
         for piece in xml_text_piece_array:
-            line = piece.generate_plist_line()
+            lines += piece.generate_plist_line()
 
-        new_content = PlistConst.key_array("Lines", "")
+        new_content = PlistConst.key_array("Lines", lines)
         return new_content
 
     def generate_plist_content(self):
@@ -346,7 +359,7 @@ class TextPlist:
         new_content = template.format(width = self.xml.width,
                                     height = self.xml.height,
                                     bg_file_name = self.xml.backgroundImagePath,
-                                    xml_text_piece_array_2_plist_lines = "")
+                                    xml_text_piece_array_2_plist_lines = plist_lines)
         return new_content
 
     
