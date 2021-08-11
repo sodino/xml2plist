@@ -200,7 +200,7 @@ class XmlTextPiece:
         line += PlistConst.const_plist_LayerStyleConfigs.format(editable = editable)
 
         result = PlistConst.key_dict(dict = line)
-        print("test --> line : %s" %result)
+        # print("test --> line : %s" %result)
 
         return result
 
@@ -393,7 +393,7 @@ class Converter:
         new_dir_path = dir_plist + suffix
         # 创建新文件夹的目录 
         os.makedirs(new_dir_path)
-        print("new_dir_path : " + new_dir_path)
+        # print("new_dir_path : " + new_dir_path)
         return new_dir_path
 
     ## 创建素材包根目录下第一个 configuration.plist 
@@ -433,6 +433,7 @@ class Converter:
         self.create_bg_plist(target_dir_path, text_xml)
         self.copy_bg_file(target_dir_path, text_xml)
         self.create_text_plist(target_dir_path, text_xml)
+        return target_dir_path
             
 
 
@@ -445,13 +446,23 @@ class Converter:
 
     def start(self):
         ##  当前目录路径
-        # current_path = os.getcwd()
-        # test_xml = TextXML()
-        # test_xml.read2parse_xml(current_path + "/TextBubbleInfo.xml")
+        current_path = os.getcwd()
+        
         for xml_path in self.findAllFile(dir_old) :
+            print("start : " + xml_path)
             text_xml = TextXML(xml_path)
             text_xml.read_xml()
-            converter.convert2plist(text_xml)
+            plist_dir_path = converter.convert2plist(text_xml)
+
+            zip_dir = os.path.abspath(os.path.join(plist_dir_path, ".."))
+            zip_path = os.path.join(zip_dir, text_xml.resId + ".zip")
+            # print("zip_path=" + zip_path + " from plist_dir_path=" + plist_dir_path)
+            PlistIO.zip_dir(plist_dir_path, zip_path)
+            print(text_xml.resId + " end")
+
+            
+
+
 
 
 if __name__ == '__main__':
@@ -464,3 +475,5 @@ if __name__ == '__main__':
 
     print("xml all tagNames are : " + str(tags.keys()))
     print("xml all formats are : " + str(formats.keys()))
+
+    
